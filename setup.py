@@ -14,13 +14,10 @@ setup(
 	long_description='''
 ''',
 	cmdclass = {'build_ext': build_ext},
-	ext_modules = [Extension('aqbanking', ['aqbanking.pyx', ],
-		libraries=['aqbanking', ],
-		include_dirs=['/usr/include', ],
-		extra_compile_args=[
-			'-Wno-unused-but-set-variable',
-			'-Wno-cast-qual',
-			],
+	ext_modules = [Extension('aqbanking', ['aqbanking.pyx'],
+		libraries=['aqbanking', 'gwenhywfar', ],
+		include_dirs=['/usr/include', '/usr/include/gwenhywfar4', '/usr/include/aqbanking5', ],
+		extra_compile_args=['-Wno-cast-qual', '-Wno-strict-prototypes', ],
 		)],
 	author = "M. Dietrich",
 	author_email = "mdt@pyneo.org",

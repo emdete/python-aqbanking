@@ -1,0 +1,9 @@
+#include <gwenhywfar4/gwenhywfar/gwenhywfar.h>
+#include <gwenhywfar4/gwenhywfar/db.h>
+#include <gwenhywfar4/gwenhywfar/stringlist.h>
+#include <gwenhywfar4/gwenhywfar/buffer.h>
+#include <gwenhywfar4/gwenhywfar/cgui.h>
+#include <aqbanking/banking.h>
+#include <aqbanking/abgui.h>
+#include <aqbanking/jobgetbalance.h>
+#include <aqbanking/jobgettransactions.h>
