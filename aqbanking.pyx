@@ -761,6 +761,29 @@ class BankingRequestor:
 	def __repr__(self):
 		return 'bank.BankingRequestor()'
 
+class BLZCheck(object):
+	def __init__(self, filename='/var/lib/ktoblzcheck1/bankdata.txt'):
+		self.blz_mapping = self._read(filename)
+
+	def _read(self, filename):
+		blz_mapping = dict()
+		from os.path import exists
+		if exists(filename):
+			f = open(filename)
+			l = f.readlines()
+			f.close()
+			for b in l:
+				b = unicode(b, 'iso8859-15', 'replace')
+				b = b.strip().split('\t')
+				blz_mapping[b[0]] = dict(zip(('bank_code', 'bank_validationmethod', 'bank_name', 'bank_location', ), b))
+		return blz_mapping
+
+	def get_bank(self, bank_code):
+		if bank_code in self.blz_mapping:
+			b = self.blz_mapping[bank_code]
+			return b
+
+
 cdef _init_module():
 	cdef int rv
 	rv = GWEN_Init()
