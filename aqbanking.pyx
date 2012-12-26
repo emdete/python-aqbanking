@@ -13,6 +13,8 @@ only goal is to determine transactions on accounts and the current balance.
 from datetime import datetime
 from hashlib import md5
 
+charencoding = 'iso8859-15', 'replace',
+
 cdef extern from *:
 	ctypedef char* const_char_ptr "const char*"
 
@@ -509,7 +511,7 @@ cdef class TRANSACTION:
 	property transaction_text:
 		def __get__(self):
 			cdef const_char_ptr r = AB_Transaction_GetTransactionText(self._transaction)
-			if r: return unicode(r, 'utf8')
+			if r: return unicode(r, *charencoding)
 	property value:
 		def __get__(self):
 			cdef const_AB_VALUE_ptr v = AB_Transaction_GetValue(self._transaction)
@@ -553,7 +555,7 @@ cdef class TRANSACTION:
 					ret += ' '
 					ret += s
 				_stringlistentry = GWEN_StringListEntry_Next(_stringlistentry)
-			if ret: return unicode(ret, 'utf8')
+			if ret: return unicode(ret, *charencoding)
 	property category:
 		def __get__(self):
 			cdef const_GWEN_STRINGLIST_ptr _stringlist = AB_Transaction_GetCategory(self._transaction)
@@ -568,7 +570,7 @@ cdef class TRANSACTION:
 					ret += ' '
 					ret += s
 				_stringlistentry = GWEN_StringListEntry_Next(_stringlistentry)
-			if ret: return unicode(ret, 'utf8')
+			if ret: return unicode(ret, *charencoding)
 	def dict(self):
 		ret = dict()
 		c = self.purpose
@@ -615,7 +617,7 @@ cdef class TRANSACTION:
 		r = AB_Transaction_GetRemoteIban(self._transaction)
 		if r: ret['remote_iban'] = r
 		r = AB_Transaction_GetTransactionText(self._transaction)
-		if r: ret['transaction_text'] = unicode(r, 'utf8')
+		if r: ret['transaction_text'] = unicode(r, *charencoding)
 		cdef const_GWEN_TIME_ptr _time
 		_time = AB_Transaction_GetValutaDate(self._transaction)
 		if _time: ret['valuta_date'] = datetime.utcfromtimestamp(GWEN_Time_toTime_t(_time))
