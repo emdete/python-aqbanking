@@ -13,7 +13,7 @@ only goal is to determine transactions on accounts and the current balance.
 from datetime import datetime
 from hashlib import md5
 
-charencoding = 'iso8859-15', 'replace',
+charencoding = 'utf-8', 'replace',
 
 cdef extern from *:
 	ctypedef char* const_char_ptr "const char*"
