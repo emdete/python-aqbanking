@@ -32,7 +32,7 @@ def main(pin_name, pin_value, config_dir, bank_code, account_numbers, *args):
 			for n, v in b.items():
 				tx['local_' + n] = v
 		#print tx
-		print u' '.join([unicode(n) for n in tx.values()])
+		print u' '.join([unicode(n) for n in tx.values()]).encode('utf-8')
 
 if __name__ == '__main__':
 	from sys import argv
