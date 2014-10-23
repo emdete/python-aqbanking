@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # python-aqbanking setup script
 # Setup.py for python-aqbanking
