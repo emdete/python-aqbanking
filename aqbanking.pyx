@@ -293,7 +293,7 @@ cdef class TIME:
 	def __cinit__(self, t):
 		if isinstance(t, datetime):
 			s = t.isoformat()[:19]
-			self._time = GWEN_Time_fromUtcString(s, 'YYYY-MM-DDThh:mm:ss')
+			self._time = GWEN_Time_fromUtcString(s.encode(), b"YYYY-MM-DDThh:mm:ss")
 			if self._time == NULL:
 				raise Exception('GWEN_Time_fromUtcString: NULL')
 		else:
@@ -552,7 +552,7 @@ cdef class TRANSACTION:
 				if ret is None:
 					ret = s
 				else:
-					ret += ' '
+					ret += b' '
 					ret += s
 				_stringlistentry = GWEN_StringListEntry_Next(_stringlistentry)
 			if ret: return unicode(ret, *charencoding)
@@ -567,7 +567,7 @@ cdef class TRANSACTION:
 				if ret is None:
 					ret = s
 				else:
-					ret += ' '
+					ret += b' '
 					ret += s
 				_stringlistentry = GWEN_StringListEntry_Next(_stringlistentry)
 			if ret: return unicode(ret, *charencoding)
@@ -631,7 +631,7 @@ cdef class TRANSACTION:
 			str(self.remote_bank_code),
 			str(self.value),
 			str(self.valuta_date),
-			)))
+			)).encode())
 		ret['ui'] = m.hexdigest()
 		return ret
 	def __repr__(self):
