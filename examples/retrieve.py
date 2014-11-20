@@ -1,5 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+
 __author__ = "M. Dietrich <mdt@pyneo.org>"
 __version__ = "prototype"
 __copyright__ = "Copyright (c) 2008 M. Dietrich"
@@ -12,16 +14,51 @@ from aqbanking import BankingRequestor, BLZCheck
 see file:///usr/share/doc/libaqbanking-doc/aqbanking.html/group__G__AB__BANKING.html
 '''
 
+# python3 port
+import sys
+if sys.version_info > (3,):
+	unicode = str
 
-def main(pin_name, pin_value, config_dir, bank_code, account_numbers, *args):
+def main():
+	import argparse
+	import os
+
+	ap = argparse.ArgumentParser()
+	ap.add_argument('--pin', default=None, help=(
+		"your PIN. note that giving passwords as command-line args is "
+		"usually an extremely bad idea; omit for an interactive prompt."))
+	ap.add_argument('--pin-name', default=None, help=(
+		"some internal aqbanking magic. its shown in the log when wrong. "
+		"usually something along the lines of PIN_{BLZ}_{user_id}"))
+	ap.add_argument('--config-dir', default=os.path.expanduser('~/.aqbanking'), help=(
+		"your aqbanking config dir, where the bank account "
+		"in question has been fully configured. defaults to ~/.aqbanking."))
+	ap.add_argument('--bank-code', required=True, help=(
+		"your bank code (german: BLZ)"))
+	ap.add_argument('--account-number', required=True, help=(
+		"your account number. split using semicolons."))
+
+	args = ap.parse_args()
+
+	if args.pin is None != args.pin_name is None:
+		ap.error("--pin and --pin-name require each other.")
+
+	account_numbers = args.account_number.split(';')
+
 	bc = BLZCheck()
-	for tx in BankingRequestor(
-		pin_name=pin_name, # the name is some internal aqbanking magic. its shown in the log when wrong
-		pin_value=pin_value,
-		config_dir=config_dir,
-		bank_code=bank_code,
-		account_numbers=account_numbers.split(';'),
-	).request_transactions(from_time=datetime.now()-timedelta(days=90), to_time=datetime.now(), ):
+	rq = BankingRequestor(
+		pin_name=args.pin_name,
+		pin_value=args.pin,
+		config_dir=args.config_dir,
+		bank_code=args.bank_code,
+		account_numbers=account_numbers
+	)
+
+	balances = {}
+	for index, balance in enumerate(rq.request_balances()):
+		balances[account_numbers[index]] = balance
+
+	for tx in rq.request_transactions(from_time=datetime.now()-timedelta(days=90), to_time=datetime.now()):
 		if 'remote_bank_code' in tx:
 			b = bc.get_bank(tx['remote_bank_code'])
 			if b:
@@ -32,9 +69,12 @@ def main(pin_name, pin_value, config_dir, bank_code, account_numbers, *args):
 			for n, v in b.items():
 				tx['local_' + n] = v
 		#print tx
-		print u' '.join([unicode(n) for n in tx.values()])
+		print(u' '.join(unicode(n) for n in tx.values()))
+
+	print(u'balances:')
+	for account_number, balance in balances.items():
+		print(unicode(account_number) + ": " + u' '.join(unicode(n) for n in balance.values()))
 
 if __name__ == '__main__':
-	from sys import argv
-	main(*argv[1:])
+	main()
 # vim:tw=0:nowrap
