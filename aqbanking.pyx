@@ -15,6 +15,30 @@ from hashlib import md5
 
 charencoding = 'utf-8', 'replace',
 
+# python3 port
+from sys import version_info
+py3 = bool(version_info >= (3,))
+
+def sixdecode(val):
+	"""
+	returns val, and tries to decode it, if encoded
+	"""
+	if py3 and isinstance(val, bytes):
+		return val.decode(*charencoding)
+	elif not py3 and isinstance(val, str):
+		return val.decode(*charencoding)
+	else:
+		return val
+
+def sixencode(val):
+	"""
+	returns val, and encodes it if python3 and it's a str object
+	"""
+	if py3 and isinstance(val, str):
+		return val.encode(*charencoding)
+	else:
+		return val
+
 cdef extern from *:
 	ctypedef char* const_char_ptr "const char*"
 
@@ -293,7 +317,7 @@ cdef class TIME:
 	def __cinit__(self, t):
 		if isinstance(t, datetime):
 			s = t.isoformat()[:19]
-			self._time = GWEN_Time_fromUtcString(s, 'YYYY-MM-DDThh:mm:ss')
+			self._time = GWEN_Time_fromUtcString(sixencode(s), sixencode("YYYY-MM-DDThh:mm:ss"))
 			if self._time == NULL:
 				raise Exception('GWEN_Time_fromUtcString: NULL')
 		else:
@@ -552,7 +576,7 @@ cdef class TRANSACTION:
 				if ret is None:
 					ret = s
 				else:
-					ret += ' '
+					ret += b' '
 					ret += s
 				_stringlistentry = GWEN_StringListEntry_Next(_stringlistentry)
 			if ret: return unicode(ret, *charencoding)
@@ -567,7 +591,7 @@ cdef class TRANSACTION:
 				if ret is None:
 					ret = s
 				else:
-					ret += ' '
+					ret += b' '
 					ret += s
 				_stringlistentry = GWEN_StringListEntry_Next(_stringlistentry)
 			if ret: return unicode(ret, *charencoding)
@@ -624,14 +648,14 @@ cdef class TRANSACTION:
 		_time =AB_Transaction_GetDate(self._transaction)
 		if _time: ret['date'] = datetime.utcfromtimestamp(GWEN_Time_toTime_t(_time))
 		m = md5()
-		m.update('|'.join((
+		m.update(sixencode('|'.join((
 			str(self.local_account_number),
 			str(self.local_bank_code),
 			str(self.remote_account_number),
 			str(self.remote_bank_code),
 			str(self.value),
 			str(self.valuta_date),
-			)))
+			))))
 		ret['ui'] = m.hexdigest()
 		return ret
 	def __repr__(self):
@@ -709,7 +733,13 @@ cdef class ACCOUNT_STATUS:
 
 class BankingRequestor:
 	def __init__(self, pin_name, pin_value, config_dir, account_numbers, bank_code, ):
-		account_numbers = list(account_numbers)
+		account_numbers = [sixencode(an) for an in account_numbers]
+		pin_name = sixencode(pin_name)
+		pin_value = sixencode(pin_value)
+		bank_code = sixencode(bank_code)
+		account_numbers = sixencode(account_numbers)
+		config_dir = sixencode(config_dir)
+
 		self.accounts = list()
 		self.gui = GUI(pin_name, pin_value)
 		self.banking = BANKING(self.gui, config_dir)
@@ -741,7 +771,7 @@ class BankingRequestor:
 		ret = list()
 		for accountinfo in context:
 			for transaction in accountinfo:
-				ret.append(transaction.dict()) # TODO: yield!
+				ret.append({k: sixdecode(v) for k, v in transaction.dict().items()}) # TODO: yield!
 		return ret
 
 	def request_balances(self, ):
@@ -757,7 +787,7 @@ class BankingRequestor:
 		ret = list()
 		for accountinfo in context:
 			for balance in accountinfo:
-				ret.append(balance.dict()) # TODO: yield!
+				ret.append({k: sixdecode(v) for k, v in balance.dict().items()}) # TODO: yield!
 		return ret
 
 	def __repr__(self):

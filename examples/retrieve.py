@@ -1,5 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+
 __author__ = "M. Dietrich <mdt@pyneo.org>"
 __version__ = "prototype"
 __copyright__ = "Copyright (c) 2008 M. Dietrich"
@@ -11,6 +13,11 @@ from aqbanking import BankingRequestor, BLZCheck
 '''
 see file:///usr/share/doc/libaqbanking-doc/aqbanking.html/group__G__AB__BANKING.html
 '''
+
+# python3 port
+import sys
+if sys.version_info > (3,):
+	unicode = str
 
 def main():
 	import argparse
@@ -55,7 +62,7 @@ def main():
 			for n, v in b.items():
 				tx['local_' + n] = v
 		#print tx
-		print u' '.join([unicode(n) for n in tx.values()])
+		print(u' '.join(unicode(n) for n in tx.values()))
 
 if __name__ == '__main__':
 	main()
