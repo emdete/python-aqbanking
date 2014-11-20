@@ -43,15 +43,22 @@ def main():
 	if args.pin is None != args.pin_name is None:
 		ap.error("--pin and --pin-name require each other.")
 
+	account_numbers = args.account_number.split(';')
+
 	bc = BLZCheck()
-	for tx in BankingRequestor(
+	rq = BankingRequestor(
 		pin_name=args.pin_name,
 		pin_value=args.pin,
 		config_dir=args.config_dir,
 		bank_code=args.bank_code,
-		account_numbers=args.account_number.split(';')
-	).request_transactions(from_time=datetime.now()-timedelta(days=90), to_time=datetime.now(), ):
+		account_numbers=account_numbers
+	)
 
+	balances = {}
+	for index, balance in enumerate(rq.request_balances()):
+		balances[account_numbers[index]] = balance
+
+	for tx in rq.request_transactions(from_time=datetime.now()-timedelta(days=90), to_time=datetime.now()):
 		if 'remote_bank_code' in tx:
 			b = bc.get_bank(tx['remote_bank_code'])
 			if b:
@@ -63,6 +70,10 @@ def main():
 				tx['local_' + n] = v
 		#print tx
 		print(u' '.join(unicode(n) for n in tx.values()))
+
+	print(u'balances:')
+	for account_number, balance in balances.items():
+		print(unicode(account_number) + ": " + u' '.join(unicode(n) for n in balance.values()))
 
 if __name__ == '__main__':
 	main()
